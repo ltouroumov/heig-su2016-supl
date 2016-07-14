@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "sh",
+    "isShellCommand": true,
+    "args": ["-c"],
+    "showOutput": "always",
+    "tasks": [
+        {
+            "taskName": "regen",
+            "suppressTaskName": true,
+            "args": [ "cd \"${workspaceRoot}/build\" && cmake .." ]
+        },
+        {
+            "taskName": "build",
+            "suppressTaskName": true,
+            "args": [ "cd \"${workspaceRoot}/build\" && make" ]
+        },
+        {
+            "taskName": "test",
+            "suppressTaskName": true,
+            "args": [ "cd \"${workspaceRoot}/build\" && ./suplc ../test.su" ]
+        }
+    ]
+}

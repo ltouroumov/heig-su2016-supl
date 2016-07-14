@@ -1,0 +1,31 @@
+int a,b,c;
+
+void test(int p1, p2)
+{
+  while (p1 > 0) { 
+    write p2;
+    p1 = p1 - 1;
+  }
+  return;
+}
+
+{
+  a = 77;
+
+  if (a < 2) {
+    b = 3;
+  } else {
+    b = 5;
+  }
+
+  int b;
+
+  if ((a < b) && (b > c)) {}
+
+  print "Hello:\"\n\t";
+  read a;
+  read b;
+
+  a = 1 + test(a+b, b+c);
+}
+
