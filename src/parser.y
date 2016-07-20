@@ -97,7 +97,7 @@ program:
     stmtBlock
     { 
         add_op(cb, opHalt, NULL);
-        if (yydebug) dump_codeblock(cb);
+        dump_codeblock(cb);
         save_codeblock(cb, fn_pfx);
         Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
         Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
@@ -145,6 +145,7 @@ varDecl_opt:
     | varDecl
     ;
 
+
 idList:
     tIdent { $$ = (IDlist*)calloc(1, sizeof(IDlist)); $$->id = $tIdent; }
     | idList tSep tIdent { $$ = (IDlist*)calloc(1, sizeof(IDlist)); $$->id = $tIdent; $$->next = $1; }
@@ -178,6 +179,14 @@ funDecl:
         ff->next = func;
         func = ff;
 
+        IDlist* param = $varDecl_opt;
+        while(param) {
+            Symbol* symb = find_symbol(symtab, param->id, sLocal);
+            add_op(cb, opStore, symb);
+
+            param = param->next;
+        }
+
         if ($varDecl_opt != NULL) {
             delete_idlist($varDecl_opt);
         }
@@ -188,7 +197,7 @@ funDecl:
             add_op(cb, opPush, 0);
         }
         add_op(cb, opReturn, NULL);
-        if (yydebug) dump_codeblock(cb);
+        dump_codeblock(cb);
         save_codeblock(cb, fn_pfx);
         Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
         Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
@@ -348,7 +357,7 @@ return:
 read:
     tRead tIdent tTerm
     {
-        Symbol* id = find_symbol(symtab, $tIdent, sLocal);
+        Symbol* id = find_symbol(symtab, $tIdent, sGlobal);
         add_op(cb, opRead, id);
     }
     ;
