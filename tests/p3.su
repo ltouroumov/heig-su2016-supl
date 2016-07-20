@@ -20,7 +20,9 @@ void test(int p1, p2)
 
   int b;
 
-  if ((a < b) && (b > c)) {}
+  if ((a < b) && (b > c)) {
+    print "SU!";
+  }
 
   print "Hello:\"\n\t";
   read a;
@@ -28,4 +30,3 @@ void test(int p1, p2)
 
   a = 1 + test(a+b, b+c);
 }
-
