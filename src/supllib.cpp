@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "supllib.h"
+#include "supllib.hpp"
 
 #define DBG_SYMTAB  0
 #define DBG_STACK   0

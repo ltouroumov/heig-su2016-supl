@@ -16,9 +16,11 @@ bison_target(suParser src/parser.y
 add_flex_bison_dependency(suLexer suParser)
 
 configure_file(src/supllib.hpp supllib.hpp COPYONLY)
+configure_file(src/utils.hpp utils.hpp COPYONLY)
 
 set(Compiler_SRCS
     src/main.cpp
+    src/utils.cpp
     src/supllib.cpp)
 
 set(VM_SRCS

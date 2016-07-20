@@ -41,11 +41,15 @@ write   { return tWrite; }
 ")"     { return tRpar; }
 
 "="                    { return tAssign; }
-"-"|"+"                { return tMathAdd; }
-"*"|"/"|"%"            { return tMathMul; }
+"+"                    { return tMathAdd; }
+"-"                    { return tMathSub; }
+"*"                    { return tMathMul; }
+"/"                    { return tMathDiv; }
+"%"                    { return tMathMod; }
 "^"                    { return tMathExp; }
-"&&"|"||"              { return tLogicOp; }
-"=="|"<="|">="|"<"|">" { return tCmpOp; }
+"=="                   { return tCmpEq; }
+"<="                   { return tCmpLe; }
+"<"                    { return tCmpLt; }
 
 \".+\"  { yylval.str = strdup(yytext); return tStr; }
 

@@ -13,6 +13,7 @@ int yyerror(const char *msg);
 
 %code requires {
     #include "supllib.hpp"
+    #include "utils.hpp"
 }
 
 %union {
@@ -50,24 +51,27 @@ int yyerror(const char *msg);
 %token tRpar
 %token tAssign
 %token tMathAdd
+%token tMathSub
 %token tMathMul
+%token tMathDiv
+%token tMathMod
 %token tMathExp
-%token tLogicOp
-%token tCmpOp
+%token tCmpEq
+%token tCmpLe
+%token tCmpLt
 %token tStr
 %token tIdent
 %token tNumber
 
-%type <str> tMathAdd
-%type <str> tMathMul
-%type <str> tMathExp
-%type <str> tLogicOp
-%type <str> tCmpOp
 %type <str> tStr
 %type <str> tIdent
 %type <num> tNumber
-%type <idl> idList
+%type <idl> idList varDecl varDecl_opt
 %type <typ> type
+
+%left tMathAdd tMathSub
+%left tMathMul tMathDiv tMathMod
+%left tMathExp
 
 %%
 
@@ -95,16 +99,32 @@ declList:
     ;
 
 decl:
-    varDecl tTerm
+    varDecl tTerm { delete_idlist($varDecl); }
     | funDecl
     ;
 
 varDecl:
     type idList
+    { 
+        IDlist *l = $idList;
+        while (l) { 
+            if (insert_symbol(symtab, l->id, $type) == NULL) {
+                char *error = NULL;
+                asprintf(&error, "Duplicated identifier '%s'.", l->id);
+                yyerror(error);
+                free(error);
+                YYABORT;
+            } else {
+                printf("declared %s\n", l->id);
+            }
+            l = l->next;
+        }
+        $$ = $idList;
+    }
     ;
 
 varDecl_opt:
-    %empty
+    %empty { $$ = NULL; }
     | varDecl
     ;
 
@@ -114,8 +134,28 @@ idList:
     ;
 
 funDecl:
-    type tIdent tLpar varDecl_opt tRpar
+    type tIdent
+    {
+        cb = init_codeblock($tIdent); 
+        stack = init_stack(stack); symtab = init_symtab(stack, symtab);
+        rettype = $type;
+    } 
+    tLpar varDecl_opt tRpar
+    {
+        if ($varDecl_opt != NULL) {
+            delete_idlist($varDecl_opt);
+        }
+    }
     stmtBlock
+    {
+        if (rettype != tVoid) {
+            add_op(cb, opPush, 0);
+        }
+        add_op(cb, opReturn, NULL);
+        dump_codeblock(cb); save_codeblock(cb, fn_pfx);
+        Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
+        Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
+    }
     ;
 
 type:
@@ -147,10 +187,14 @@ stmt_list:
 
 assign:
     tIdent tAssign expression tTerm
+    {
+        Symbol* id = find_symbol(symtab, $tIdent, sGlobal);
+        add_op(cb, opStore, id);
+    }
     ;
 
 cond:
-    tIf tLpar expression tRpar stmtBlock cond_else
+    tIf tLpar condition tRpar stmtBlock cond_else
     ;
 
 cond_else:
@@ -159,7 +203,7 @@ cond_else:
     ;
 
 while:
-    tWhile tLpar expression tRpar
+    tWhile tLpar condition tRpar
     stmtBlock
     ;
 
@@ -174,29 +218,64 @@ call_args:
     ;
 
 return:
-    tReturn expression_opt tTerm
+    tReturn tTerm
+    {
+        if (rettype == tVoid) {
+            add_op(cb, opReturn, NULL);
+        } else {
+            yyerror("Non void functions must return a value");
+            YYABORT;
+        }
+    }
+    | tReturn expression tTerm
+    {
+        if (rettype != tVoid) {
+            add_op(cb, opReturn, NULL);
+        } else {
+            yyerror("Non void functions must return a value");
+            YYABORT;
+        }
+    }
     ;
 
 read:
     tRead tIdent tTerm
+    {
+        Symbol* id = find_symbol(symtab, $tIdent, sLocal);
+        add_op(cb, opRead, id);
+    }
     ;
 
 write:
-    tWrite tIdent tTerm
+    tWrite expression tTerm
+    {
+        add_op(cb, opWrite, NULL);
+    }
     ;
 
 print:
     tPrint tStr tTerm
+    {
+        add_op(cb, opPrint, $tStr);
+    }
     ;
 
 expression:
     tNumber
+    {
+        add_op(cb, opPush, (void*)$tNumber);
+    }
     | tIdent
-    | expression tMathAdd expression
-    | expression tMathMul expression
-    | expression tMathExp expression
-    | expression tLogicOp expression
-    | expression tCmpOp expression
+    { 
+        Symbol* id = find_symbol(symtab, $tIdent, sGlobal);
+        add_op(cb, opLoad, id);
+    }
+    | expression tMathAdd expression { add_op(cb, opAdd, NULL); }
+    | expression tMathSub expression { add_op(cb, opSub, NULL); }
+    | expression tMathMul expression { add_op(cb, opMul, NULL); }
+    | expression tMathDiv expression { add_op(cb, opDiv, NULL); }
+    | expression tMathMod expression { add_op(cb, opMod, NULL); }
+    | expression tMathExp expression { add_op(cb, opPow, NULL); }
     | tLpar expression tRpar
     | call
     ;
@@ -204,6 +283,12 @@ expression:
 expression_opt:
     %empty
     | expression
+    ;
+
+condition:
+    expression tCmpEq expression
+    | expression tCmpLe expression
+    | expression tCmpLt expression
     ;
 
 %%

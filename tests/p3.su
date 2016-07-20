@@ -10,7 +10,7 @@ void test(int p1, p2)
 }
 
 {
-  a = 77;
+  x = 77;
 
   if (a < 2) {
     b = 3;

@@ -34,7 +34,8 @@ void p(int a,b)
 
   print "a = (7) "; write a;
 
-  print "compute Fibonacci number up to "; read n;
+  print "compute Fibonacci number up to ";
+  read n;
 
   i = 0;
   while (i < n) {

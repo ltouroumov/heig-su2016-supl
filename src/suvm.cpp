@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include "supllib.h"
+#include "supllib.hpp"
 
 /// @{
 /// @name memories
