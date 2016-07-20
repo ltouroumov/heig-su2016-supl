@@ -1,0 +1,59 @@
+int rng;
+
+int rand() {
+    rng = rng * 22695477 + 1;
+    return rng;
+}
+
+int randrange(int min, max) {
+    int val, delta;
+    delta = max - min;
+
+    if (delta < 0) {
+        print "invalid ranrange arguments\n";
+        return 0;
+    } else {
+        val = rand() % delta + min;
+        while (val < min) {
+            val = val + min;
+        }
+        return val;
+    }
+}
+
+{
+    int max, guess, mystery, win, count;
+
+    print "=== guess game ===";
+
+    print "random seed: ";
+    read rng;
+
+    print "maximum: ";
+    read max;
+
+    mystery = randrange(1, max);
+
+    win = 0;
+    count = 1;
+    while (win == 0) {
+        print "attempt ";
+        write count;
+        print "your guess: ";
+        read guess;
+
+        count = count + 1;
+
+        if (guess < mystery) {
+            print "too cold\n";
+        } else {
+            if (mystery < guess) {
+                print "too hot!\n";
+            } else {
+                win = 1;
+            }
+        }
+    }
+
+    print "You WIN!!";
+}

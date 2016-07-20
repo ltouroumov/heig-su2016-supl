@@ -218,7 +218,7 @@ stmt:
     | assign
     | cond
     | while
-    | call tTerm
+    | callStmt tTerm
     | return
     | read
     | write
@@ -303,10 +303,41 @@ while:
     }
     ;
 
-call:
+callExpr:
     tIdent tLpar call_args tRpar
     {
-        Funclist * fn = find_func(func, $tIdent);
+        Funclist* fn = find_func(func, $tIdent);
+        if (fn == NULL){
+            char *error = NULL;
+            asprintf(&error, "Unkown function '%s'.", $tIdent);
+            yyerror(error);
+            free(error);
+            YYABORT;
+        }
+        else if (fn->narg != $call_args) {
+            char *error = NULL;
+            asprintf(&error, "Mismatched number of arguments for '%s' expected %d got %d.", $tIdent, fn->narg, $call_args);
+            yyerror(error);
+            free(error);
+            YYABORT;
+        }
+        else if (fn->rettype == tVoid) {
+            char *error = NULL;
+            asprintf(&error, "Function '%s' is of type void and cannot be used in an expression.", $tIdent, fn->narg, $call_args);
+            yyerror(error);
+            free(error);
+            YYABORT;
+        }
+        else {
+            add_op(cb, opCall, $tIdent);
+        }
+    }
+    ;
+
+callStmt:
+    tIdent tLpar call_args tRpar
+    {
+        Funclist* fn = find_func(func, $tIdent);
         if (fn == NULL){
             char *error = NULL;
             asprintf(&error, "Unkown function '%s'.", $tIdent);
@@ -387,7 +418,10 @@ expression:
         if (id != NULL) {
             add_op(cb, opLoad, id);
         } else {
-            yyerror("symbol not declared before use!");
+            char *error = NULL;
+            asprintf(&error, "Symbol '%s' undeclared", $tIdent);
+            yyerror(error);
+            free(error);
             YYABORT;
         }
     }
@@ -398,7 +432,7 @@ expression:
     | expression tMathMod expression { add_op(cb, opMod, NULL); }
     | expression tMathExp expression { add_op(cb, opPow, NULL); }
     | tLpar expression tRpar
-    | call
+    | callExpr
     ;
 
 expression_opt:
