@@ -6,7 +6,7 @@ SRCS=src/main.cpp src/utils.cpp src/supllib.cpp src/suvm.cpp
 all: suplc suvm
 
 src/parser.cpp src/parser.hpp: src/parser.y
-	bison --defines=src/parser.hpp --output=src/parser.cpp $<
+	bison --report=all --defines=src/parser.hpp --output=src/parser.cpp $<
 
 src/lexer.cpp src/lexer.hpp: src/lexer.l src/parser.cpp src/parser.hpp
 	flex --outfile=src/lexer.cpp --header-file=src/lexer.hpp $<
