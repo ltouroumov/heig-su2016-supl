@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-g -O0 -std=c++11
 
-SRCS=src/main.cpp src/supllib.cpp src/suvm.cpp
+SRCS=src/main.cpp src/utils.cpp src/supllib.cpp src/suvm.cpp
 
 all: suplc suvm
 
@@ -14,7 +14,7 @@ src/lexer.cpp src/lexer.hpp: src/lexer.l src/parser.cpp src/parser.hpp
 obj/%.o: src/%.cpp
 	$(CC) $(CFLAGS) -c -o $@ $^
 
-suplc: obj/lexer.o obj/parser.o obj/main.o obj/supllib.o
+suplc: obj/lexer.o obj/parser.o obj/main.o obj/utils.o obj/supllib.o
 	$(CC) $(CFLAGS) -o $@ $^ -lfl
 
 suvm: obj/suvm.o obj/supllib.o

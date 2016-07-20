@@ -83,7 +83,11 @@ int yyerror(const char *msg);
 %%
 
 program:
-    { stack = init_stack(NULL); symtab = init_symtab(stack, NULL); func = NULL; }
+    {
+        stack = init_stack(NULL);
+        symtab = init_symtab(stack, NULL);
+        func = NULL;
+    }
     declList
     {
         cb = init_codeblock(""); 
@@ -93,7 +97,7 @@ program:
     stmtBlock
     { 
         add_op(cb, opHalt, NULL);
-        // dump_codeblock(cb);
+        if (yydebug) dump_codeblock(cb);
         save_codeblock(cb, fn_pfx);
         Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
         Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
@@ -149,6 +153,15 @@ idList:
 funDecl:
     type tIdent
     {
+        Funclist* fn = find_func(func, $tIdent);
+        if (fn != NULL) {
+            char *error = NULL;
+            asprintf(&error, "Duplicated function '%s'.", $tIdent);
+            yyerror(error);
+            free(error);
+            YYABORT;
+        }
+
         cb = init_codeblock($tIdent); 
         stack = init_stack(stack); symtab = init_symtab(stack, symtab);
         rettype = $type;
@@ -175,7 +188,7 @@ funDecl:
             add_op(cb, opPush, 0);
         }
         add_op(cb, opReturn, NULL);
-        // dump_codeblock(cb);
+        if (yydebug) dump_codeblock(cb);
         save_codeblock(cb, fn_pfx);
         Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
         Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
@@ -213,7 +226,15 @@ assign:
     tIdent tAssign expression tTerm
     {
         Symbol* id = find_symbol(symtab, $tIdent, sGlobal);
-        add_op(cb, opStore, id);
+        if (id != NULL) {
+            add_op(cb, opStore, id);
+        } else {
+            char *error = NULL;
+            asprintf(&error, "Unkown identifier '%s'.", $tIdent);
+            yyerror(error);
+            free(error);
+            YYABORT;
+        }
     }
     ;
 
@@ -277,12 +298,18 @@ call:
     tIdent tLpar call_args tRpar
     {
         Funclist * fn = find_func(func, $tIdent);
-        if (fn == NULL){            
-            yyerror("function does not exist!");
+        if (fn == NULL){
+            char *error = NULL;
+            asprintf(&error, "Unkown function '%s'.", $tIdent);
+            yyerror(error);
+            free(error);
             YYABORT;
         }
-        else if (fn->narg != $call_args) {            
-            yyerror("mismatched number of arguments!");
+        else if (fn->narg != $call_args) {
+            char *error = NULL;
+            asprintf(&error, "Mismatched number of arguments for '%s' expected %d got %d.", $tIdent, fn->narg, $call_args);
+            yyerror(error);
+            free(error);
             YYABORT;
         }
         else {
@@ -299,7 +326,7 @@ call_args:
 
 return:
     tReturn expression_opt tTerm  {
-		if($expression_opt){
+		if(!$expression_opt){
 			if(rettype != tVoid){
 				yyerror("Expression expected.");
 				YYABORT;
