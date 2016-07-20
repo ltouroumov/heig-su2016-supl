@@ -34,3 +34,7 @@ handout/
 *.app
 
 *.sux
+lexer.*pp
+parser.*pp
+suplc
+suvm

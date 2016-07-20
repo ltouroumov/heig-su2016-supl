@@ -70,7 +70,7 @@ int yyerror(const char *msg);
 
 %type <str> tStr
 %type <str> tIdent
-%type <num> tNumber tChr
+%type <num> tNumber tChr expression_opt call_args
 %type <idl> idList varDecl varDecl_opt
 %type <typ> type
 %type <opc> condition
@@ -115,7 +115,14 @@ varDecl:
     { 
         IDlist *l = $idList;
         while (l) { 
-            if (insert_symbol(symtab, l->id, $type) == NULL) {
+            if ($type == tVoid) {
+                char *error = NULL;
+                asprintf(&error, "invalid identifier type for '%s'.", l->id);
+                yyerror(error);
+                free(error);
+                YYABORT;
+            }
+            else if (insert_symbol(symtab, l->id, $type) == NULL) {
                 char *error = NULL;
                 asprintf(&error, "Duplicated identifier '%s'.", l->id);
                 yyerror(error);
@@ -270,8 +277,12 @@ call:
     tIdent tLpar call_args tRpar
     {
         Funclist * fn = find_func(func, $tIdent);
-        if (fn ==NULL){            
+        if (fn == NULL){            
             yyerror("function does not exist!");
+            YYABORT;
+        }
+        else if (fn->narg != $call_args) {            
+            yyerror("mismatched number of arguments!");
             YYABORT;
         }
         else {
@@ -281,30 +292,30 @@ call:
     ;
 
 call_args:
-    %empty
-    | expression
-    | call_args tSep expression
+    %empty { $$ = 0; }
+    | expression { $$ = 1; }
+    | call_args tSep expression { $$ = $1 + 1; }
     ;
 
 return:
-    tReturn tTerm
-    {
-        if (rettype == tVoid) {
-            add_op(cb, opReturn, NULL);
-        } else {
-            yyerror("Non void functions must return a value");
-            YYABORT;
-        }
-    }
-    | tReturn expression tTerm
-    {
-        if (rettype != tVoid) {
-            add_op(cb, opReturn, NULL);
-        } else {
-            yyerror("Non void functions must return a value");
-            YYABORT;
-        }
-    }
+    tReturn expression_opt tTerm  {
+		if($expression_opt){
+			if(rettype != tVoid){
+				yyerror("Expression expected.");
+				YYABORT;
+			}else{
+				add_op(cb, opReturn, NULL);
+			}
+		}else{
+			if(rettype != tInteger){
+				yyerror("Expression expected.");
+				YYABORT;
+			}else{
+				add_op(cb, opReturn, NULL);
+			}			
+		
+		}
+	}
     ;
 
 read:
@@ -337,7 +348,12 @@ expression:
     | tIdent
     { 
         Symbol* id = find_symbol(symtab, $tIdent, sGlobal);
-        add_op(cb, opLoad, id);
+        if (id != NULL) {
+            add_op(cb, opLoad, id);
+        } else {
+            yyerror("symbol not declared before use!");
+            YYABORT;
+        }
     }
     | expression tMathAdd expression { add_op(cb, opAdd, NULL); }
     | expression tMathSub expression { add_op(cb, opSub, NULL); }
@@ -350,8 +366,8 @@ expression:
     ;
 
 expression_opt:
-    %empty
-    | expression
+    %empty { $$ = 0; }
+    | expression { $$ = 1; }
     ;
 
 condition:
