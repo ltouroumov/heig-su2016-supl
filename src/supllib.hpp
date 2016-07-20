@@ -218,7 +218,7 @@ typedef enum __opcode {         ///< syntax operands semantics
   opReturn,                     ///< opReturn  0     return to caller
 
   opJump,                       ///< opJump    1     goto code[op]
-  opJeq,                        ///< opJeg     1     if p2 == p1 goto code[op]
+  opJeq,                        ///< opJeq     1     if p2 == p1 goto code[op]
   opJle,                        ///< opJle     1     if p2 <= p1 goto code[op]
   opJlt,                        ///< opJlt     1     if p2 <  p1 goto code[op]
 

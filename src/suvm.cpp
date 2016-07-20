@@ -178,7 +178,7 @@ void execute(void)
       case opJle:
       case opJlt:
         { // 
-          // opJeg, opJle, opJlt            opJump
+          // opJeq, opJle, opJlt            opJump
           // pop b                        
           // pop a
           // flag = a ?? b 

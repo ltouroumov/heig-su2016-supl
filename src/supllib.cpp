@@ -477,7 +477,7 @@ char opc_str[opMax][12] = {
   "opPush", "opPop",
   "opLoad", "opStore",
   "opCall", "opReturn",
-  "opJump", "opJeg", "opJle", "opJlt",
+  "opJump", "opJeq", "opJle", "opJlt",
   "opRead", "opWrite", "opPrint",
 };
 

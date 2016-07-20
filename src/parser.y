@@ -21,6 +21,8 @@ int yyerror(const char *msg);
   char*    str;
   IDlist*  idl;
   EType    typ;
+  EOpcode  opc;
+  BPrecord* bpr;
 }
 
 %code {
@@ -68,6 +70,8 @@ int yyerror(const char *msg);
 %type <num> tNumber
 %type <idl> idList varDecl varDecl_opt
 %type <typ> type
+%type <opc> condition
+%type <bpr> tIf tWhile
 
 %left tMathAdd tMathSub
 %left tMathMul tMathDiv tMathMod
@@ -194,17 +198,59 @@ assign:
     ;
 
 cond:
-    tIf tLpar condition tRpar stmtBlock cond_else
+    tIf tLpar condition tRpar
+    {
+        $tIf = (BPrecord*)calloc(1, sizeof(BPrecord));
+
+        Operation* trueJmp = add_op(cb, $condition, NULL);
+        Operation* falseJmp = add_op(cb, opJump, NULL);
+
+        $tIf->ttrue = add_backpatch($tIf->ttrue, trueJmp);
+        $tIf->tfalse = add_backpatch($tIf->tfalse, falseJmp);
+
+        pending_backpatch(cb, $tIf->ttrue);
+    }
+    stmtBlock
+    {
+        Operation* endJmp = add_op(cb, opJump, NULL);
+        $tIf->end = add_backpatch($tIf->end, endJmp);
+
+        pending_backpatch(cb, $tIf->tfalse);
+    }
+    condElse
+    {
+        pending_backpatch(cb, $tIf->end);
+    }
     ;
 
-cond_else:
+condElse:
     %empty
     | tElse stmtBlock
     ;
 
 while:
-    tWhile tLpar condition tRpar
+    tWhile
+    {
+        $tWhile = (BPrecord*)calloc(1, sizeof(BPrecord));
+
+        $tWhile->pos = cb->nops;
+    }
+    tLpar condition tRpar
+    {
+        Operation* trueJmp = add_op(cb, $condition, NULL);
+        Operation* falseJmp = add_op(cb, opJump, NULL);
+
+        $tWhile->ttrue = add_backpatch($tWhile->ttrue, trueJmp);
+        $tWhile->tfalse = add_backpatch($tWhile->tfalse, falseJmp);
+
+        pending_backpatch(cb, $tWhile->ttrue);
+    }
     stmtBlock
+    {
+        Operation* start = get_op(cb, $tWhile->pos);
+        Operation* backJmp = add_op(cb, opJump, start);
+        pending_backpatch(cb, $tWhile->tfalse);
+    }
     ;
 
 call:
@@ -286,9 +332,9 @@ expression_opt:
     ;
 
 condition:
-    expression tCmpEq expression
-    | expression tCmpLe expression
-    | expression tCmpLt expression
+    expression tCmpEq expression { $$ = opJeq; }
+    | expression tCmpLe expression { $$ = opJle; }
+    | expression tCmpLt expression { $$ = opJlt; }
     ;
 
 %%

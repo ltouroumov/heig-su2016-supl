@@ -51,7 +51,12 @@ write   { return tWrite; }
 "<="                   { return tCmpLe; }
 "<"                    { return tCmpLt; }
 
-\".+\"  { yylval.str = strdup(yytext); return tStr; }
+\".+\"  {
+  int len = strlen(yytext);
+  yylval.str = strdup(yytext+1);
+  yylval.str[len-2] = '\0';
+  return tStr;
+}
 
 {IDENT} { yylval.str = strdup(yytext); return tIdent; }
 [0-9]+   { yylval.num = atoi(yytext); return tNumber; }
