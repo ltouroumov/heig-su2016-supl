@@ -367,9 +367,9 @@ int main(int argc, char *argv[])
   // load main code
   entry = load("", fn_pfx);
   if (entry != NULL) {
-    dump_codeblock(entry);
+    //dump_codeblock(entry);
 
-    printf("\n\nExecution begins\n\n");
+    //printf("\n\nExecution begins\n\n");
 
     // initialize stacks
     operands = init_stack(NULL);

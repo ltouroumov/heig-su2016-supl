@@ -5,14 +5,6 @@ SRCS=src/main.cpp src/supllib.cpp src/suvm.cpp
 
 all: suplc suvm
 
-depend: .depend
-
-.depend: $(SRCS)
-	rm -f ./.depend
-	$(CC) $(CFLAGS) -MM $^ -MF  ./.depend;
-
-include .depend
-
 src/parser.cpp src/parser.hpp: src/parser.y
 	bison --defines=src/parser.hpp --output=src/parser.cpp $<
 

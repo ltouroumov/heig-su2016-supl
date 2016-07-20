@@ -1,0 +1,19 @@
+{
+    write 8 * 4;
+    write 4 * 8;
+
+    write 8 / 4;
+    write 4 / 8;
+
+    write 8 % 4;
+    write 4 % 8;	
+
+    write 8 + 4;
+    write 4 + 8;
+
+    write 8 - 4;
+    write 4 - 8;
+
+    write 2 ^ 4;
+    write 4 ^ 2;
+}

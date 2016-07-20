@@ -93,7 +93,8 @@ program:
     stmtBlock
     { 
         add_op(cb, opHalt, NULL);
-        dump_codeblock(cb); save_codeblock(cb, fn_pfx);
+        // dump_codeblock(cb);
+        save_codeblock(cb, fn_pfx);
         Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
         Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
     }
@@ -128,8 +129,6 @@ varDecl:
                 yyerror(error);
                 free(error);
                 YYABORT;
-            } else {
-                printf("declared %s\n", l->id);
             }
             l = l->next;
         }
@@ -176,7 +175,8 @@ funDecl:
             add_op(cb, opPush, 0);
         }
         add_op(cb, opReturn, NULL);
-        dump_codeblock(cb); save_codeblock(cb, fn_pfx);
+        // dump_codeblock(cb);
+        save_codeblock(cb, fn_pfx);
         Stack *pstck = stack; stack = stack->uplink; delete_stack(pstck);
         Symtab *pst = symtab; symtab = symtab->parent; delete_symtab(pst);
     }

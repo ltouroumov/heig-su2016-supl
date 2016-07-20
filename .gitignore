@@ -8,6 +8,7 @@ handout/
 *.lo
 *.o
 *.obj
+.depend
 
 # Precompiled Headers
 *.gch
