@@ -4,15 +4,28 @@
   a = 1;
   d = 0;
 
+  print "a = ";
+  write a;
+  print "d = ";
+  write d;
+
   if (a == 1) {
+    print "entered cond 1\n";
     a = 2;
   }
+  print "a = ";
+  write a;
 
   if (a == 2) {
+    print "entered cond 1\n";
     a = 3;
   } else {
+    print "entered cond 1 (else)\n";
     a = 4;
   }
+
+  print "a = ";
+  write a;
 
   if (a == 0) {
     if (b == 0) {
@@ -22,5 +35,5 @@
     }
   }
 
-  write d;
+  print "d = "; write d;
 }

@@ -306,6 +306,8 @@ void delete_backpatchlist(BPrecord *bpr);
 /// @param cb codeblock to print
 void dump_codeblock(CodeBlock *cb);
 
+void dump_operation(Operation *op);
+
 /// @brief load codeblock from file
 /// @param label label (function name, "" for main routine)
 /// @param fn_prefix filename prefix

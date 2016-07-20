@@ -29,6 +29,7 @@ int yyerror(const char *msg);
   Stack   *stack = NULL;
   Symtab *symtab = NULL;
   CodeBlock *cb  = NULL;
+  Funclist* func = NULL;
 
   char *fn_pfx   = NULL;
   EType rettype  = tVoid;
@@ -64,10 +65,12 @@ int yyerror(const char *msg);
 %token tStr
 %token tIdent
 %token tNumber
+%token tQuote
+%token tChr
 
 %type <str> tStr
 %type <str> tIdent
-%type <num> tNumber
+%type <num> tNumber tChr
 %type <idl> idList varDecl varDecl_opt
 %type <typ> type
 %type <opc> condition
@@ -80,7 +83,7 @@ int yyerror(const char *msg);
 %%
 
 program:
-    { stack = init_stack(NULL); symtab = init_symtab(stack, NULL); }
+    { stack = init_stack(NULL); symtab = init_symtab(stack, NULL); func = NULL; }
     declList
     {
         cb = init_codeblock(""); 
@@ -146,6 +149,16 @@ funDecl:
     } 
     tLpar varDecl_opt tRpar
     {
+        Funclist* ff = (Funclist*)calloc(1, sizeof(Funclist));
+        ff->id = strdup($tIdent);
+        ff->rettype = $type;
+        int cnt =0;
+        IDlist* l = $varDecl_opt;
+        while(l){cnt++; l = l->next;}
+        ff->narg = cnt;
+        ff->next = func;
+        func = ff;
+
         if ($varDecl_opt != NULL) {
             delete_idlist($varDecl_opt);
         }
@@ -255,6 +268,16 @@ while:
 
 call:
     tIdent tLpar call_args tRpar
+    {
+        Funclist * fn = find_func(func, $tIdent);
+        if (fn ==NULL){            
+            yyerror("function does not exist!");
+            YYABORT;
+        }
+        else {
+            add_op(cb, opCall, $tIdent);
+        }
+    }
     ;
 
 call_args:

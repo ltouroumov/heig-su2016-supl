@@ -1,0 +1,8 @@
+void foo() {
+    print "in foo";
+}
+
+{
+    print "calling foo ...";
+    foo();
+}

@@ -40,16 +40,16 @@ write   { return tWrite; }
 "("     { return tLpar; }
 ")"     { return tRpar; }
 
-"="                    { return tAssign; }
-"+"                    { return tMathAdd; }
-"-"                    { return tMathSub; }
-"*"                    { return tMathMul; }
-"/"                    { return tMathDiv; }
-"%"                    { return tMathMod; }
-"^"                    { return tMathExp; }
-"=="                   { return tCmpEq; }
-"<="                   { return tCmpLe; }
-"<"                    { return tCmpLt; }
+"="     { return tAssign; }
+"+"     { return tMathAdd; }
+"-"     { return tMathSub; }
+"*"     { return tMathMul; }
+"/"     { return tMathDiv; }
+"%"     { return tMathMod; }
+"^"     { return tMathExp; }
+"=="    { return tCmpEq; }
+"<="    { return tCmpLe; }
+"<"     { return tCmpLt; }
 
 \".+\"  {
   int len = strlen(yytext);
