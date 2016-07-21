@@ -8,7 +8,7 @@ int rand() {
 int randrange(int min, max) {
     int val, delta;
     delta = max - min;
-
+    
     if (delta < 0) {
         print "invalid ranrange arguments\n";
         return 0;
@@ -24,7 +24,7 @@ int randrange(int min, max) {
 {
     int max, guess, mystery, win, count;
 
-    print "=== guess game ===";
+    print "=== guess game ===\n";
 
     print "random seed: ";
     read rng;
